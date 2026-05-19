@@ -5,6 +5,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 const byte ROWS = 4;
 const byte COLUMNS = 4;
+bool isScrollingStarted = false;
 
 char keys[ROWS][COLUMNS] = {
   {'1', '2', '3', 'A'},
@@ -36,5 +37,11 @@ void loop() {
   char key = keypad.getKey();
   if (key) {
     udvozles();
+    isScrollingStarted = true;
+  }
+  if (isScrollingStarted) {
+    delay(1000);
+    lcd.scrollDisplayLeft();
+    delay(300);
   }
 }
