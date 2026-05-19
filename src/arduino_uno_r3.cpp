@@ -21,7 +21,7 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPin, colPin, ROWS, COLUMNS);
 
 Servo lock;
 
-void udvozles() {
+void welcomeMsg() {
   lcd.setCursor(0, 0);
   lcd.print("Udvozoljuk!");
 
@@ -29,11 +29,11 @@ void udvozles() {
   lcd.print("Kerem, adja meg a PIN kodot!");
 }
 
-void ajtoZaras() {
+void closeDoor() {
   lock.write(180);  
 }
 
-void ajtoNyitas() {
+void openDoor() {
   lock.write(90);  
 }
 
@@ -42,17 +42,16 @@ void setup() {
   lcd.backlight();
   lock.attach(3);
   
-  //ajtoZaras();
-  ajtoNyitas();
+  openDoor();
   delay(2000);
-  ajtoZaras();
+  closeDoor();
 
 }
 
 void loop() {
   char key = keypad.getKey();
   if (key) {
-    udvozles();
+    welcomeMsg();
     isScrollingStarted = true;
   }
   if (isScrollingStarted) {
