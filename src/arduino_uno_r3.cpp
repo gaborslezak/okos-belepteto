@@ -29,19 +29,23 @@ void udvozles() {
   lcd.print("Kerem, adja meg a PIN kodot!");
 }
 
+void ajtoZaras() {
+  lock.write(180);  
+}
+
+void ajtoNyitas() {
+  lock.write(90);  
+}
+
 void setup() {
   lcd.init();
   lcd.backlight();
-  
   lock.attach(3);
   
-  lock.write(0);
-  delay(1000);
-
-  lock.write(90);
-  delay(1000);
-
-  lock.write(0);
+  //ajtoZaras();
+  ajtoNyitas();
+  delay(2000);
+  ajtoZaras();
 
 }
 
