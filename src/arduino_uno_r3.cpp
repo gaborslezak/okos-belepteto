@@ -1,6 +1,6 @@
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
-
+#include <Servo.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 const byte ROWS = 4;
@@ -19,6 +19,8 @@ byte colPin[COLUMNS] = {7, 6, 5, 4};
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPin, colPin, ROWS, COLUMNS);
 
+Servo lock;
+
 void udvozles() {
   lcd.setCursor(0, 0);
   lcd.print("Udvozoljuk!");
@@ -30,6 +32,16 @@ void udvozles() {
 void setup() {
   lcd.init();
   lcd.backlight();
+  
+  lock.attach(3);
+  
+  lock.write(0);
+  delay(1000);
+
+  lock.write(90);
+  delay(1000);
+
+  lock.write(0);
 
 }
 
