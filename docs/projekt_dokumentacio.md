@@ -18,3 +18,15 @@ Az okos beléptető célja egy olyan proof of concept rendszer kialakítása, am
 - Keypad 4x4
 - LCD
 - Micro Servo
+
+### LCD:
+
+#### LCD bekötése:
+
+![LCD-Arduino bekötés](imgs/LCD-Arduino_bekotes.png)
+|LCD|Arduino Uno R3|
+|-----|--------------|
+|SCL|A5|
+|SDA|A4|
+|VCC|5V|
+|GND|GND|
