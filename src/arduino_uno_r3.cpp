@@ -48,7 +48,7 @@ void welcomeMsg(char key) {
   }
 }
 
-void pinScreen() {
+void pinScreen(char key) {
   if(isClearNeeded) {
     lcd.clear();
     isClearNeeded = false;
@@ -58,6 +58,11 @@ void pinScreen() {
   lcd.setCursor(0, 1);
   lcd.print("PIN:");
 
+  if (key >= '0' && key <= '9') {
+    if(enteredPIN.length() < 4) {
+    	enteredPIN += key;	
+    }
+  }
   for (int i = 0; i < enteredPIN.length(); i++) {
     lcd.print("*");
   }
@@ -70,14 +75,6 @@ void pinScreen() {
   else if(enteredPIN.length() == 4 && enteredPIN == openPIN) {
     currScreen = SCREEN_OPEN_DOOR;
     enteredPIN ="";
-  }
-}
-
-void pinInputScreen(char key) {
-  if (key >= '0' && key <= '9') {
-    if(enteredPIN.length() < 4) {
-    	enteredPIN += key;	
-    }
   }
 }
 
@@ -136,8 +133,8 @@ void loop() {
       welcomeMsg(key);
       break;
     case SCREEN_PIN:
-      pinScreen();
-      pinInputScreen(key);
+      pinScreen(key);
+      delay(10);
       break;
     case SCREEN_ERROR:
       errorScreen();
