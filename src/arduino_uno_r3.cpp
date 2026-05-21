@@ -5,7 +5,14 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 enum Screen {
   SCREEN_WELCOME,
-  SCREEN_PIN
+  SCREEN_PIN,
+  SCREEN_OPEN_DOOR,
+  SCREEN_ERROR
+};
+
+enum ErrorCode {
+  NO_ERROR,
+  INVALID_PIN
 };
 
 const byte ROWS = 4;
@@ -17,6 +24,7 @@ String closePIN = "8965";
 
 Screen currScreen = SCREEN_WELCOME;
 Screen prevScreen = SCREEN_WELCOME;
+ErrorCode currErrorCode = NO_ERROR;
 
 char keys[ROWS][COLUMNS] = {
   {'1', '2', '3', 'A'},
@@ -53,6 +61,16 @@ void pinScreen() {
   for (int i = 0; i < enteredPIN.length(); i++) {
     lcd.print("*");
   }
+
+  if (enteredPIN.length() == 4 && enteredPIN != openPIN) {
+    currScreen = SCREEN_ERROR;
+    currErrorCode = INVALID_PIN;
+    enteredPIN = "";
+  }
+  else if(enteredPIN.length() == 4 && enteredPIN == openPIN) {
+    currScreen = SCREEN_OPEN_DOOR;
+    enteredPIN ="";
+  }
 }
 
 void pinInputScreen(char key) {
@@ -68,13 +86,42 @@ void closeDoor() {
 }
 
 void openDoor() {
+  if(isClearNeeded) {
+    lcd.clear();
+    isClearNeeded = false;
+  }
+  lcd.setCursor(0, 0);
+  lcd.print("PIN helyes.");
+  lcd.setCursor(0, 1);
+  lcd.print("Ajto nyilik.");
   lock.write(90);  
+}
+
+void errorScreen() {
+  if(isClearNeeded) {
+    lcd.clear();
+    isClearNeeded = false;
+  }
+  switch (currErrorCode) {
+    case INVALID_PIN:
+      lcd.setCursor(0, 0);
+      lcd.print("A PIN hibas.");
+      lcd.setCursor(0, 1);
+      lcd.print("Probald ujra!");
+      delay(500);
+      currScreen = SCREEN_PIN;
+      currErrorCode = NO_ERROR;
+      break;
+    default:
+      break;
+  }
 }
 
 void setup() {
   lcd.init();
   lcd.backlight();
   lock.attach(3);
+  lock.write(0);
 }
 
 void loop() {
@@ -91,6 +138,12 @@ void loop() {
     case SCREEN_PIN:
       pinScreen();
       pinInputScreen(key);
+      break;
+    case SCREEN_ERROR:
+      errorScreen();
+      break;
+    case SCREEN_OPEN_DOOR:
+      openDoor();
       break;
   }
 }
