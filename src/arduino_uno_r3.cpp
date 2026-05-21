@@ -3,9 +3,20 @@
 #include <Servo.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
+enum Screen {
+  SCREEN_WELCOME,
+  SCREEN_PIN
+};
+
 const byte ROWS = 4;
 const byte COLUMNS = 4;
-bool isScrollingStarted = false;
+bool isClearNeeded = true;
+String enteredPIN = "";
+String openPIN = "1234";
+String closePIN = "8965";
+
+Screen currScreen = SCREEN_WELCOME;
+Screen prevScreen = SCREEN_WELCOME;
 
 char keys[ROWS][COLUMNS] = {
   {'1', '2', '3', 'A'},
@@ -21,12 +32,35 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPin, colPin, ROWS, COLUMNS);
 
 Servo lock;
 
-void welcomeMsg() {
+void welcomeMsg(char key) {
   lcd.setCursor(0, 0);
   lcd.print("Udvozoljuk!");
+  if (key) {
+    currScreen = SCREEN_PIN;
+  }
+}
 
+void pinScreen() {
+  if(isClearNeeded) {
+    lcd.clear();
+    isClearNeeded = false;
+  }
+  lcd.setCursor(0, 0);
+  lcd.print("Kerem a PINt:");
   lcd.setCursor(0, 1);
-  lcd.print("Kerem, adja meg a PIN kodot!");
+  lcd.print("PIN:");
+
+  for (int i = 0; i < enteredPIN.length(); i++) {
+    lcd.print("*");
+  }
+}
+
+void pinInputScreen(char key) {
+  if (key >= '0' && key <= '9') {
+    if(enteredPIN.length() < 4) {
+    	enteredPIN += key;	
+    }
+  }
 }
 
 void closeDoor() {
@@ -41,22 +75,22 @@ void setup() {
   lcd.init();
   lcd.backlight();
   lock.attach(3);
-  
-  openDoor();
-  delay(2000);
-  closeDoor();
-
 }
 
 void loop() {
   char key = keypad.getKey();
-  if (key) {
-    welcomeMsg();
-    isScrollingStarted = true;
+  if (currScreen != prevScreen) {
+    isClearNeeded = true;
+    prevScreen = currScreen;
   }
-  if (isScrollingStarted) {
-    delay(1000);
-    lcd.scrollDisplayLeft();
-    delay(300);
+  
+  switch (currScreen) {
+    case SCREEN_WELCOME:
+      welcomeMsg(key);
+      break;
+    case SCREEN_PIN:
+      pinScreen();
+      pinInputScreen(key);
+      break;
   }
 }
