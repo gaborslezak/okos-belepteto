@@ -6,7 +6,8 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 enum Screen {
   SCREEN_WELCOME,
   SCREEN_PIN,
-  SCREEN_OPEN_DOOR,
+  SCREEN_OPENED_DOOR,
+  SCREEN_CLOSED_DOOR,
   SCREEN_ERROR
 };
 
@@ -21,6 +22,9 @@ bool isClearNeeded = true;
 String enteredPIN = "";
 String openPIN = "1234";
 String closePIN = "8965";
+int lastCloserButtonState = HIGH;
+int currCloserButtonState = HIGH;
+bool isDoorClosed = true;
 
 Screen currScreen = SCREEN_WELCOME;
 Screen prevScreen = SCREEN_WELCOME;
@@ -73,13 +77,20 @@ void pinScreen(char key) {
     enteredPIN = "";
   }
   else if(enteredPIN.length() == 4 && enteredPIN == openPIN) {
-    currScreen = SCREEN_OPEN_DOOR;
+    currScreen = SCREEN_OPENED_DOOR;
     enteredPIN ="";
   }
 }
 
 void closeDoor() {
-  lock.write(180);  
+  if(isClearNeeded) {
+    lcd.clear();
+    isClearNeeded = false;
+  }
+  currScreen = SCREEN_CLOSED_DOOR;
+  lcd.setCursor(0, 0);
+  lcd.print("Ajto zarodik.");
+  lock.write(0);
 }
 
 void openDoor() {
@@ -87,11 +98,10 @@ void openDoor() {
     lcd.clear();
     isClearNeeded = false;
   }
+  currScreen = SCREEN_OPENED_DOOR;
   lcd.setCursor(0, 0);
-  lcd.print("PIN helyes.");
-  lcd.setCursor(0, 1);
   lcd.print("Ajto nyilik.");
-  lock.write(90);  
+  lock.write(90);
 }
 
 void errorScreen() {
@@ -114,15 +124,37 @@ void errorScreen() {
   }
 }
 
+void openedDoorSequence() {
+  if (isDoorClosed) {
+    openDoor();
+    isDoorClosed = false;
+  }
+  if (lastCloserButtonState == HIGH && currCloserButtonState == LOW) {
+    closeDoor();
+    isDoorClosed = true;
+    currScreen = SCREEN_CLOSED_DOOR;
+  }
+}
+
+void closedDoorSequence() {
+  if (lastCloserButtonState == HIGH && currCloserButtonState == LOW) {
+    openDoor();
+    isDoorClosed = false;
+    currScreen = SCREEN_OPENED_DOOR;
+  }
+}
+
 void setup() {
   lcd.init();
   lcd.backlight();
   lock.attach(3);
   lock.write(0);
+  pinMode(2, INPUT_PULLUP);
 }
 
 void loop() {
   char key = keypad.getKey();
+  currCloserButtonState = digitalRead(2);
   if (currScreen != prevScreen) {
     isClearNeeded = true;
     prevScreen = currScreen;
@@ -139,8 +171,12 @@ void loop() {
     case SCREEN_ERROR:
       errorScreen();
       break;
-    case SCREEN_OPEN_DOOR:
-      openDoor();
+    case SCREEN_OPENED_DOOR:
+      openedDoorSequence();
+      break;
+    case SCREEN_CLOSED_DOOR:
+      closedDoorSequence();
       break;
   }
+  lastCloserButtonState = currCloserButtonState;
 }
