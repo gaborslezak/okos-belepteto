@@ -27,6 +27,14 @@ String closePIN = "8965";
 int lastCloserButtonState = HIGH;
 int currCloserButtonState = HIGH;
 bool isDoorClosed = true;
+int doorButton = 2;
+int doorLockPin = 3;
+int windowButton = 13;
+int windowLockPin = 12;
+int lastWindowButtonState = HIGH;
+int currWindowButtonState = HIGH;
+bool isWindowOpen = true;
+int potPin = A0;
 
 Screen currScreen = SCREEN_WELCOME;
 Screen prevScreen = SCREEN_WELCOME;
@@ -44,7 +52,8 @@ byte colPin[COLUMNS] = {7, 6, 5, 4};
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPin, colPin, ROWS, COLUMNS);
 
-Servo lock;
+Servo doorLock;
+Servo windowLock;
 
 void welcomeMsg(char key) {
   lcd.setCursor(0, 0);
@@ -108,7 +117,7 @@ void closeDoor() {
   currScreen = SCREEN_CLOSED_DOOR;
   lcd.setCursor(0, 0);
   lcd.print("Ajto zarodik.");
-  lock.write(0);
+  doorLock.write(0);
 }
 
 void openDoor() {
@@ -119,7 +128,7 @@ void openDoor() {
   currScreen = SCREEN_OPENED_DOOR;
   lcd.setCursor(0, 0);
   lcd.print("Ajto nyilik.");
-  lock.write(90);
+  doorLock.write(90);
 }
 
 void errorScreen() {
@@ -174,19 +183,46 @@ void guestsLeft(){
   closeDoor();
 }
 
+void windowHandler(int percentage) {
+  if (lastWindowButtonState == HIGH && currWindowButtonState == LOW) {
+    isWindowOpen = !isWindowOpen;
+    Serial.println(isWindowOpen);
+    if (isWindowOpen) {
+      windowLock.write(90);
+    } else {
+      windowLock.write(0);
+    }
+  }
+  lastWindowButtonState = currWindowButtonState;
+  if (isWindowOpen && percentage > 30) {
+     Serial.print("RAIN");
+     Serial.print("RAIN");
+  }
+}
+
 void setup() {
   lcd.init();
   lcd.backlight();
-  lock.attach(3);
-  lock.write(0);
-  pinMode(2, INPUT_PULLUP);
+  windowLock.attach(windowLockPin);
+  windowLock.write(90);
+  doorLock.attach(doorLockPin);
+  doorLock.write(0);
+  pinMode(doorButton, INPUT_PULLUP);
+  pinMode(windowButton, INPUT_PULLUP);
   Serial.begin(9600);
 }
 
 void loop() {
+  int value = analogRead(potPin);
+  int percentage = map(value, 0, 1023, 100, 0);
+  Serial.print("Potmeter: ");
+  Serial.print(percentage);
+  Serial.println("%");
+
   char key = keypad.getKey();
   Serial.println(key);
-  currCloserButtonState = digitalRead(2);
+  currCloserButtonState = digitalRead(doorButton);
+  currWindowButtonState = digitalRead(windowButton);
   if (key == 'C') {
     currScreen = SCREEN_LEAVING;
   }
@@ -220,4 +256,5 @@ void loop() {
       break;
   }
   lastCloserButtonState = currCloserButtonState;
+  windowHandler(percentage);
 }
