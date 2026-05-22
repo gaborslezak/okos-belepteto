@@ -8,7 +8,9 @@ enum Screen {
   SCREEN_PIN,
   SCREEN_OPENED_DOOR,
   SCREEN_CLOSED_DOOR,
-  SCREEN_ERROR
+  SCREEN_ERROR,
+  SCREEN_LEAVING,
+  SCREEN_LEFT
 };
 
 enum ErrorCode {
@@ -71,15 +73,31 @@ void pinScreen(char key, String pin, String reason) {
     lcd.print("*");
   }
 
-  if (enteredPIN.length() == 4 && enteredPIN != pin) {
-    currScreen = SCREEN_ERROR;
-    currErrorCode = INVALID_PIN;
-    enteredPIN = "";
+  if(pin == openPIN) {
+    Serial.println("OPENPIN");
+    if (enteredPIN.length() == 4 && enteredPIN != pin) {
+      currScreen = SCREEN_ERROR;
+      currErrorCode = INVALID_PIN;
+      enteredPIN = "";
+    }
+    else if(enteredPIN.length() == 4 && enteredPIN == pin) {
+      currScreen = SCREEN_OPENED_DOOR;
+      enteredPIN ="";
+    }
+  } else {
+    Serial.println("CLOSEPIN");
+    if (enteredPIN.length() == 4 && enteredPIN != pin) {
+      currScreen = SCREEN_ERROR;
+      currErrorCode = INVALID_PIN;
+      enteredPIN = "";
+    }
+    else if(enteredPIN.length() == 4 && enteredPIN == pin) {
+      currScreen = SCREEN_LEFT;
+      enteredPIN ="";
+    }
   }
-  else if(enteredPIN.length() == 4 && enteredPIN == pin) {
-    currScreen = SCREEN_OPENED_DOOR;
-    enteredPIN ="";
-  }
+
+
 }
 
 void closeDoor() {
@@ -144,6 +162,18 @@ void closedDoorSequence() {
   }
 }
 
+void guestsLeft(){
+  if(isClearNeeded) {
+    lcd.clear();
+    isClearNeeded = false;
+  }
+  lcd.setCursor(0, 0);
+  lcd.print("Viszlat!");
+  lcd.setCursor(0, 1);
+  lcd.print("Visszavarjuk!");
+  closeDoor();
+}
+
 void setup() {
   lcd.init();
   lcd.backlight();
@@ -157,6 +187,9 @@ void loop() {
   char key = keypad.getKey();
   Serial.println(key);
   currCloserButtonState = digitalRead(2);
+  if (key == 'C') {
+    currScreen = SCREEN_LEAVING;
+  }
   if (currScreen != prevScreen) {
     isClearNeeded = true;
     prevScreen = currScreen;
@@ -178,6 +211,12 @@ void loop() {
       break;
     case SCREEN_CLOSED_DOOR:
       closedDoorSequence();
+      break;
+    case SCREEN_LEAVING:
+      pinScreen(key, closePIN, "Zaras, kerem a");
+      break;
+    case SCREEN_LEFT:
+      guestsLeft();
       break;
   }
   lastCloserButtonState = currCloserButtonState;
