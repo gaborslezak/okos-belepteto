@@ -52,15 +52,15 @@ void welcomeMsg(char key) {
   }
 }
 
-void pinScreen(char key) {
+void pinScreen(char key, String pin, String reason) {
   if(isClearNeeded) {
     lcd.clear();
     isClearNeeded = false;
   }
   lcd.setCursor(0, 0);
-  lcd.print("Kerem a PINt:");
+  lcd.print(reason);
   lcd.setCursor(0, 1);
-  lcd.print("PIN:");
+  lcd.print("PINt:");
 
   if (key >= '0' && key <= '9') {
     if(enteredPIN.length() < 4) {
@@ -71,12 +71,12 @@ void pinScreen(char key) {
     lcd.print("*");
   }
 
-  if (enteredPIN.length() == 4 && enteredPIN != openPIN) {
+  if (enteredPIN.length() == 4 && enteredPIN != pin) {
     currScreen = SCREEN_ERROR;
     currErrorCode = INVALID_PIN;
     enteredPIN = "";
   }
-  else if(enteredPIN.length() == 4 && enteredPIN == openPIN) {
+  else if(enteredPIN.length() == 4 && enteredPIN == pin) {
     currScreen = SCREEN_OPENED_DOOR;
     enteredPIN ="";
   }
@@ -150,10 +150,12 @@ void setup() {
   lock.attach(3);
   lock.write(0);
   pinMode(2, INPUT_PULLUP);
+  Serial.begin(9600);
 }
 
 void loop() {
   char key = keypad.getKey();
+  Serial.println(key);
   currCloserButtonState = digitalRead(2);
   if (currScreen != prevScreen) {
     isClearNeeded = true;
@@ -165,7 +167,7 @@ void loop() {
       welcomeMsg(key);
       break;
     case SCREEN_PIN:
-      pinScreen(key);
+      pinScreen(key, openPIN, "Nyitas, kerem a");
       delay(10);
       break;
     case SCREEN_ERROR:
