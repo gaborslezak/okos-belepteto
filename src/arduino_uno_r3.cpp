@@ -83,31 +83,19 @@ void pinScreen(char key, String pin, String reason) {
     }
   }
 
-  if(pin == openPIN) {
-    Serial.println("OPENPIN");
-    if (enteredPIN.length() == 4 && enteredPIN != pin) {
-      currScreen = SCREEN_ERROR;
-      currErrorCode = INVALID_PIN;
-      enteredPIN = "";
-    }
-    else if(enteredPIN.length() == 4 && enteredPIN == pin) {
-      currScreen = SCREEN_OPENED_DOOR;
-      enteredPIN ="";
-    }
-  } else {
-    Serial.println("CLOSEPIN");
-    if (enteredPIN.length() == 4 && enteredPIN != pin) {
-      currScreen = SCREEN_ERROR;
-      currErrorCode = INVALID_PIN;
-      enteredPIN = "";
-    }
-    else if(enteredPIN.length() == 4 && enteredPIN == pin) {
-      currScreen = SCREEN_LEFT;
-      enteredPIN ="";
-    }
+  if (enteredPIN.length() == 4 && enteredPIN != pin) {
+    currScreen = SCREEN_ERROR;
+    currErrorCode = INVALID_PIN;
+    enteredPIN = "";
   }
-
-
+  else if (enteredPIN.length() == 4 && enteredPIN == pin) {
+    if (pin == openPIN) {
+      currScreen = SCREEN_OPENED_DOOR;
+    } else {
+      currScreen = SCREEN_LEFT;
+    }
+    enteredPIN = "";
+  }
 }
 
 void closeDoor() {
