@@ -29,7 +29,7 @@ Az okos beléptető célja egy olyan Proof of Concept rendszer kialakítása, am
 
 ### Folyamatábra
 
-![LCD-Arduino bekötés](imgs/Folyamatábra.svg)
+![Schematic view](imgs/Okos_beléptető_schematic_view.png)
 
 ### Állapotgép működése:
 
@@ -56,6 +56,8 @@ Vagy például távozásnál:
 SCREEN_OPENED_DOOR → SCREEN_LEAVING → SCREEN_LEFT → SCREEN_CLOSED_DOOR
 ```
 ## Tinkercad részletek:
+
+![LCD-Arduino bekötés](imgs/LCD-Arduino_bekotes.png)
 
 ### Fő komponensek:
 
