@@ -15,7 +15,8 @@ enum Screen {
 
 enum ErrorCode {
   NO_ERROR,
-  INVALID_PIN
+  ERROR_INVALID_PIN,
+  ERROR_CLOSE_THE_DOOR
 };
 
 const byte ROWS = 4;
@@ -27,12 +28,14 @@ String closePIN = "8965";
 int lastCloserButtonState = HIGH;
 int currCloserButtonState = HIGH;
 bool isDoorClosed = true;
+bool fullLock = false;
 int doorButton = 2;
 int doorLockPin = 3;
 int windowButton = 13;
 int windowLockPin = 12;
 int lastWindowButtonState = HIGH;
 int currWindowButtonState = HIGH;
+Screen screenBeforeError = SCREEN_PIN;
 bool isWindowOpen = true;
 int potPin = A0;
 
@@ -56,6 +59,10 @@ Servo doorLock;
 Servo windowLock;
 
 void welcomeMsg(char key) {
+  if(isClearNeeded) {
+    lcd.clear();
+    isClearNeeded = false;
+  }
   lcd.setCursor(0, 0);
   lcd.print("Udvozoljuk!");
   if (key) {
@@ -84,14 +91,17 @@ void pinScreen(char key, String pin, String reason) {
   }
 
   if (enteredPIN.length() == 4 && enteredPIN != pin) {
+    screenBeforeError = currScreen;
     currScreen = SCREEN_ERROR;
-    currErrorCode = INVALID_PIN;
+    currErrorCode = ERROR_INVALID_PIN;
     enteredPIN = "";
   }
   else if (enteredPIN.length() == 4 && enteredPIN == pin) {
     if (pin == openPIN) {
+      fullLock = false;
       currScreen = SCREEN_OPENED_DOOR;
     } else {
+      fullLock = true;
       currScreen = SCREEN_LEFT;
     }
     enteredPIN = "";
@@ -126,12 +136,20 @@ void errorScreen() {
     isClearNeeded = false;
   }
   switch (currErrorCode) {
-    case INVALID_PIN:
+    case ERROR_INVALID_PIN:
       lcd.setCursor(0, 0);
       lcd.print("A PIN hibas.");
       lcd.setCursor(0, 1);
       lcd.print("Probald ujra!");
-      currScreen = SCREEN_PIN;
+      currScreen = screenBeforeError;
+      currErrorCode = NO_ERROR;
+      break;
+    case ERROR_CLOSE_THE_DOOR:
+      lcd.setCursor(0, 0);
+      lcd.print("Ajto nyitva!");
+      lcd.setCursor(0, 1);
+      lcd.print("Kerem zarja be!");
+      currScreen = screenBeforeError;
       currErrorCode = NO_ERROR;
       break;
     default:
@@ -152,7 +170,7 @@ void openedDoorSequence() {
 }
 
 void closedDoorSequence() {
-  if (lastCloserButtonState == HIGH && currCloserButtonState == LOW) {
+  if (!fullLock && lastCloserButtonState == HIGH && currCloserButtonState == LOW) {
     openDoor();
     isDoorClosed = false;
     currScreen = SCREEN_OPENED_DOOR;
@@ -162,13 +180,16 @@ void closedDoorSequence() {
 void guestsLeft(){
   if(isClearNeeded) {
     lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Viszlat!");
+    lcd.setCursor(0, 1);
+    lcd.print("Visszavarjuk!");
     isClearNeeded = false;
   }
-  lcd.setCursor(0, 0);
-  lcd.print("Viszlat!");
-  lcd.setCursor(0, 1);
-  lcd.print("Visszavarjuk!");
-  closeDoor();
+  doorLock.write(0);
+  isDoorClosed = true;
+  delay(1500);
+  currScreen = SCREEN_WELCOME;
 }
 
 void windowHandler(int percentage) {
@@ -183,8 +204,8 @@ void windowHandler(int percentage) {
   }
   lastWindowButtonState = currWindowButtonState;
   if (isWindowOpen && percentage > 30) {
-     Serial.print("RAIN");
-     Serial.print("RAIN");
+    //  Serial.print("RAIN");
+    //  Serial.print("RAIN");
   }
 }
 
@@ -203,16 +224,22 @@ void setup() {
 void loop() {
   int value = analogRead(potPin);
   int percentage = map(value, 0, 1023, 100, 0);
-  Serial.print("Potmeter: ");
-  Serial.print(percentage);
-  Serial.println("%");
+  // Serial.print("Potmeter: ");
+  // Serial.print(percentage);
+  // Serial.println("%");
 
   char key = keypad.getKey();
   //Serial.println(key);
   currCloserButtonState = digitalRead(doorButton);
   currWindowButtonState = digitalRead(windowButton);
-  if (key == 'C') {
+  Serial.println(isDoorClosed);
+  if (key == 'C' && isDoorClosed && !fullLock) {
     currScreen = SCREEN_LEAVING;
+  }
+  else if (key == 'C' && !isDoorClosed && !fullLock) {
+    screenBeforeError = currScreen;
+    currScreen = SCREEN_ERROR;
+    currErrorCode = ERROR_CLOSE_THE_DOOR;
   }
   if (currScreen != prevScreen) {
     isClearNeeded = true;
