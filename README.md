@@ -2,7 +2,7 @@
 
 Ez a projekt a Neumann János Egyetem mérnökinformatikus BSc képzésén, a Digitális Technika II. tárgy beadandójaként készült.
 
-A projekt célja egy Arduino-alapú okos beléptetőrendszer megvalósítása Tinkercadben, egyéb eszközök felhasználásával.
+A projekt célja egy Arduino-alapú okos beléptetőrendszer megvalósítása Tinkercadben.
 
 **Részletes dokumentáció a docs mappában található!**
 
