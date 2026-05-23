@@ -9,22 +9,22 @@ Ez a projekt a Neumann János Egyetem mérnökinformatikus BSc képzésén, a Di
 |Hallgató neve:| Slezák Gábor|
 |Neptun kód:   | o6kji9|
 
-A projekt célja egy Arduino-alapú okos beléptetőrendszer megvalósítása Tinkercadben
+A projekt célja egy Arduino-alapú okos beléptetőrendszer megvalósítása Tinkercadben.
 ## Az okos beléptető use-case:
 
-Az okos beléptető célja egy olyan proof of concept rendszer kialakítása, amely a szállásadók számára megkönnyíti a vendégek találkozás- és kulcsmentes bejutását az ingatlanba. A rendszer emellett képes jelezni, ha a szálláson való tartózkodás hiányában nyitva marad egy ablak, ezáltal hozzájárulva az esetleges beázások megelőzéséhez.
+Az okos beléptető célja egy olyan Proof of Concept rendszer kialakítása, amely a szállásadók számára megkönnyíti a vendégek találkozás- és kulcsmentes bejutását az ingatlanba. A rendszer emellett képes jelezni, ha a szálláson való tartózkodás hiányában nyitva marad egy ablak, ezáltal hozzájárulva az esetleges beázások megelőzéséhez.
 
 ### Funkciók és azok megvalósítása:
 
-- A rendszer bekapcsolt állapotban Üdvözli a felhasználót. Amint a Keypadon egy gomb megnyomásra kerül prompt jelzi, hogy a rendszer várja a PIN kódot.
+- A rendszer bekapcsolt állapotban `Üdvözli` a felhasználót. Amint a Keypadon egy gomb megnyomásra kerül prompt jelzi, hogy a rendszer várja a PIN kódot a zár nyitásához.
 - A rendszer külön nyitó és záró PIN kódot tárol.
-- Hibás PIN esetén hibaüzenet jelenik meg.
+- Hibás PIN esetén hibaüzenet jelenik meg, és visszaadja a korábbi képernyőt.
 - Helyes PIN esetén az ajtó nyílik/záródik.
 - A zármechanizmust a Micro Servo szimbolizálja, amely a zárt és nyitott állapotot különböző pozíciókkal modellezi.
-- Zár nyitását követően a rendszer figyeli, hogy megtörténik-e az ajtó becsukása. Ezt a rendszer egy pushButton komponenssel modellezi Tinkercadban. Képzeljünk el egy gombot, ami az ajtó test ajtókeretbe kerülésével benyomódik, ezzel jelezve a rendszernek az ajtó becsukását.
+- Zár nyitását követően a rendszer figyeli, hogy megtörténik-e az ajtó becsukása. Ezt a rendszer egy pushButton komponenssel modellezi Tinkercadban. Képzeljünk el a gombot, ami az ajtótest ajtókeretbe kerülésével benyomódik, ezzel jelezve a rendszernek az ajtó becsukását.
 - Az ajtó bezárásakor a zár magától záródik.
-- Az ajtó nyitásakor a rendszer észleli a távozást, amennyiben a záró PIN került beütésre.
-- Távozás után, amennyiben az ablak nyitva maradt és a rendszer esőt érzékel, a rendszer küld egy push notificationt. Ennek célja lehet pl. egy Google Cloudban CloudRunon futó container alkalmazás, amely értesíti a tulajdonost, hogy az ablak nyitva van. Tinkercad korlátai miatt ezt egy hamis POST üzenettel helyettesítettem.
+- A rendszernek a távozási szándékunkat a 'C' gomb lenyomásával jelezhetjük, ami ilyenkor kéri a záró PIN kódot.
+- Távozás után, amennyiben az ablak nyitva maradt és a rendszer esőt érzékel, a rendszer küld egy push notificationt. Ennek célja lehet pl. egy Google Cloudban CloudRunon futó container alkalmazás, amely értesíti a tulajdonost, miszerint az ablak nyitva van. Tinkercad korlátai miatt ezt egy mock `RAINRAIN` üzenettel helyettesítettem.
 - Az esőérzékelés szimulációja potméterrel lett megvalósítva.
 
 ### Folyamatábra
@@ -64,8 +64,8 @@ SCREEN_OPENED_DOOR → SCREEN_LEAVING → SCREEN_LEFT → SCREEN_CLOSED_DOOR
 - LCD 16 x 2 (I2C)
 - 2db Micro Servo
 - Breadboard Small
-- PushButton - Egy az ablak, egy pedig az ajtó szimulálására
-- Potméter az esőérzékelés szimulálására
+- PushButton - Egy az ablak, egy pedig az ajtó szimulálására.
+- Potméter - Az esőérzékelés szimulálására.
 
 ### LCD kijelzés megvalósítása:
 
@@ -107,10 +107,10 @@ Amennyiben isClearNeeded, úgy az egyes képernyőváltások esetén megtörtén
 #### PIN-kezelés megvalósítása Keypaddel:
 
 A rendszer:
-- a Keypadról fogad karaktereket
-- külön nyitó és záró kód került alkalmazásra
-- LCD nem mutatja a beütött számokat, csak * karaktereket
-- hibás PIN esetén hibaüzenet jelenik meg és visszatér korábbi állapotába
+- A Keypadról fogad karaktereket.
+- Külön nyitó és záró kód került alkalmazásra.
+- LCD nem mutatja a beütött számokat, csak * karaktereket.
+- Hibás PIN esetén hibaüzenet jelenik meg és visszatér korábbi állapotába.
 - Távozáskor, a záráshoz a PIN kód beütése előtt 'C' gombot kell nyomni, innen tudja a rendszer, hogy zárni kívánjuk az ingatlant. Itt a rendszer külön figyel arra, hogy ha nincs zárva az ajtó, akkor nem engedi a PIN kód beütését.
 
 ### Ajtózár:
@@ -172,17 +172,17 @@ A rendszer jelenleg - a TinkcerCAD korlátaira tekintettel is - manuálisan tesz
 Tesztesetek:
 | Teszteset | Elvárt rendszerműködés |
 |---|---|
-|Helyes nyitó PIN|Az ajtó nyílik|
-|Helytelen PIN|Hibaüzenet, és visszaadja az előző képernyőt|
-|Ajtó-nyitás zárás gombbal PIN beadása után | Nyitott rendszer esetén az ajtó nyitható és zárható a gombbal |
-|Távozás C gombbal | A rendszer csak akkor ajánlja fel a záráshoz szükséges PIN kód beütését, ha az ajtó zárva van|
-|Ablak nyitás/zárás| Megvalósítható bezárt rendszer esetén is, vélelmezve, hogy valaki távozása lehetővé teszi az otthonmaradottak részére az ablak nyitását-zárását.|
-|Esőjelzés nyitott ablak esetén | Nyitott ablak esetén 30% feletti eső esetén a rendszer jelzést ad|
-|Esőjelzés zárt ablak esetén | A rendszer nem ad jelzést, függetlenül az eső mennyiségétől|
+|Helyes nyitó PIN|Az ajtó nyílik.|
+|Helytelen PIN|Hibaüzenet, és visszaadja az előző képernyőt.|
+|Ajtó nyitás PIN beadása után | Nyitott rendszer esetén az ajtó nyitható és zárható az ajtó gombbal. |
+|Távozás C gombbal | A rendszer csak akkor ajánlja fel a záráshoz szükséges PIN kód beütését, ha az ajtó zárva van.|
+|Ablak nyitás/zárás| Megvalósítható bezárt rendszer esetén is, vélelmezve, hogy valaki távozása esetén is az otthonmaradottak részére lehetőséget kell biztosítani az ablak nyitására, zárására.|
+|Esőjelzés nyitott ablak esetén | Nyitott ablak esetén 30% feletti eső esetén a rendszer jelzést ad.|
+|Esőjelzés zárt ablak esetén | A rendszer nem ad jelzést, függetlenül az eső mennyiségétől.|
  
 ## Továbbfejlesztési lehetőségek:
 
-- delay() helyett lehetne millis() alapú időzítés
+- delay() helyett lehetne millis() alapú időzítés.
 - Valós fizikai eszközzel, internetre csatlakozva megoldható lenne a távoli PIN kód módosítás.
 - Eső esetén az ablak automatikusan bezárhatna, de mozgásérzékelővel, hogy a házi kedvencet ne lökjük ki az ablak zárásakor.
 - Hang- és LED visszajelzések beépíthetőek lennének.
