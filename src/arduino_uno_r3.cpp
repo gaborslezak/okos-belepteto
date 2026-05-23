@@ -66,20 +66,21 @@ void welcomeMsg(char key) {
 void pinScreen(char key, String pin, String reason) {
   if(isClearNeeded) {
     lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(reason);
+    lcd.setCursor(0, 1);
+    lcd.print("PINt:");
     isClearNeeded = false;
   }
-  lcd.setCursor(0, 0);
-  lcd.print(reason);
-  lcd.setCursor(0, 1);
-  lcd.print("PINt:");
+
 
   if (key >= '0' && key <= '9') {
     if(enteredPIN.length() < 4) {
     	enteredPIN += key;	
+
+      lcd.setCursor(5 + enteredPIN.length() - 1, 1);
+      lcd.print("*");
     }
-  }
-  for (int i = 0; i < enteredPIN.length(); i++) {
-    lcd.print("*");
   }
 
   if(pin == openPIN) {
@@ -142,7 +143,6 @@ void errorScreen() {
       lcd.print("A PIN hibas.");
       lcd.setCursor(0, 1);
       lcd.print("Probald ujra!");
-      delay(500);
       currScreen = SCREEN_PIN;
       currErrorCode = NO_ERROR;
       break;
@@ -220,7 +220,7 @@ void loop() {
   Serial.println("%");
 
   char key = keypad.getKey();
-  Serial.println(key);
+  //Serial.println(key);
   currCloserButtonState = digitalRead(doorButton);
   currWindowButtonState = digitalRead(windowButton);
   if (key == 'C') {
@@ -237,7 +237,6 @@ void loop() {
       break;
     case SCREEN_PIN:
       pinScreen(key, openPIN, "Nyitas, kerem a");
-      delay(10);
       break;
     case SCREEN_ERROR:
       errorScreen();
