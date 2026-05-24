@@ -204,8 +204,8 @@ void windowHandler(int percentage) {
   }
   lastWindowButtonState = currWindowButtonState;
   if (isWindowOpen && percentage > 30) {
-    //  Serial.print("RAIN");
-    //  Serial.print("RAIN");
+    Serial.print("RAIN");
+    Serial.print("RAIN");
   }
 }
 
